@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
   // use default SIGINT handler so CTRL+C works
   signal(SIGINT, SIG_DFL);
 
+  sm.initializeROSSetup();
+
   if (sm.initializeSimulation()) {
     ROS_INFO("node initialized, now running ");
     sm.runSimulation();

@@ -79,6 +79,7 @@ class Simulator {
  public:
   explicit Simulator(const ros::NodeHandle& node);
   virtual ~Simulator();
+  bool initializeROSSetup();
   bool initializeSimulation();
   void runSimulation();
 
@@ -87,6 +88,8 @@ class Simulator {
                          std_srvs::Empty::Response& response);
   bool onUnpauseSimulation(std_srvs::Empty::Request& request,
                            std_srvs::Empty::Response& response);
+  bool onResetSimulation(std_srvs::Empty::Request& request,
+                         std_srvs::Empty::Response& response);
 
   void spawnCallback(const ros::TimerEvent& event);
 
@@ -117,6 +120,7 @@ class Simulator {
   // provided services
   ros::ServiceServer srv_pause_simulation_;
   ros::ServiceServer srv_unpause_simulation_;
+  ros::ServiceServer srv_reset_simulation_;
 
   // frame ids
   std::string frame_id_;

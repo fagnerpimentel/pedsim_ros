@@ -56,12 +56,15 @@ Simulator::~Simulator() {
 
   srv_pause_simulation_.shutdown();
   srv_unpause_simulation_.shutdown();
+  srv_reset_simulation_.shutdown();
 
   delete robot_;
   QCoreApplication::exit(0);
 }
 
-bool Simulator::initializeSimulation() {
+
+bool Simulator::initializeROSSetup() {
+
   int queue_size = 0;
   nh_.param<int>("default_queue_size", queue_size, 1);
   ROS_INFO_STREAM("Using default queue size of "
@@ -87,6 +90,13 @@ bool Simulator::initializeSimulation() {
       "pause_simulation", &Simulator::onPauseSimulation, this);
   srv_unpause_simulation_ = nh_.advertiseService(
       "unpause_simulation", &Simulator::onUnpauseSimulation, this);
+  srv_reset_simulation_ = nh_.advertiseService(
+      "reset_simulation", &Simulator::onResetSimulation, this);
+
+}
+
+
+bool Simulator::initializeSimulation() {
 
   // setup TF listener and other pointers
   transform_listener_.reset(new tf::TransformListener());
@@ -185,9 +195,9 @@ void Simulator::reconfigureCB(pedsim_simulator::PedsimSimulatorConfig& config,
     paused_ = config.paused;
   }
 
-  ROS_INFO_STREAM("Updated sim with live config: Rate=" << CONFIG.updateRate
-                                                        << " incoming rate="
-                                                        << config.update_rate);
+  // ROS_INFO_STREAM("Updated sim with live config: Rate=" << CONFIG.updateRate
+  //                                                       << " incoming rate="
+  //                                                       << config.update_rate);
 }
 
 bool Simulator::onPauseSimulation(std_srvs::Empty::Request& request,
@@ -199,6 +209,15 @@ bool Simulator::onPauseSimulation(std_srvs::Empty::Request& request,
 bool Simulator::onUnpauseSimulation(std_srvs::Empty::Request& request,
                                     std_srvs::Empty::Response& response) {
   paused_ = false;
+  return true;
+}
+
+bool Simulator::onResetSimulation(std_srvs::Empty::Request& request,
+                                  std_srvs::Empty::Response& response) {
+
+  SCENE.clear();
+  this->initializeSimulation();
+
   return true;
 }
 
@@ -288,9 +307,9 @@ void Simulator::publishRobotPosition() {
 }
 
 void Simulator::publishAgents() {
-  if (SCENE.getAgents().size() < 2) {
-    return;
-  }
+  // if (SCENE.getAgents().size() < 2) {
+  //   return;
+  // }
 
   pedsim_msgs::AgentStates all_status;
   all_status.header = createMsgHeader();
